@@ -1,0 +1,78 @@
+<aura:component implements="flexipage:availableForAllPageTypes" access="global" controller="MillionVerifierCtrl">
+    <aura:attribute name="email" type="String"/>
+    <aura:attribute name="apiKey" type="String" default="NhX3FJkuk4Rf5imvrg4XTCdYA"/>
+    <aura:attribute name="result" type="String"/>
+    <aura:attribute name="credits" type="Integer"/>
+    <div class="slds-box">
+        <div class="slds-box">
+            <img src="{!$Resource.heySfLogo}"/>
+            <h1>Email Verifier ( Using Apex Parser )</h1>
+            <lightning:input aura:id="email"
+                             type="email"
+                             label="Email Id"
+                             value="{!v.email}">
+            </lightning:input>
+            <lightning:input aura:id="apiKey"
+                             type="String"
+                             label="Api Key"
+                             value="{!v.apiKey}">
+            </lightning:input>
+            <br/>
+            <lightning:button variant="brand" 
+                              label="Verify Email" 
+                              title="Brand action" 
+                              onclick="{! c.handleClick }" />
+        </div>
+        <div class="slds-box">
+            <h2 aura:id="color" class="">Result : {!v.result}</h2>
+            <h2>Credits Left : {!v.credits}</h2>
+        </div>
+    </div>
+</aura:component>
+
+http callout//
+
+
+public class Miri_MillionVerifierCtrl {
+    @AuraEnabled
+    public static list<String> getCalloutResponse(String mainUrl) {
+        list<String> resList = new list<String>();
+        String result;
+        String result1;
+        // Instantiate a new http object
+        Http h = new Http();
+        
+        // Instantiate a new HTTP request, specify the method (GET) as well as the endpoint
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint(mainUrl);
+        req.setMethod('GET');
+        
+        // Send the request, and return a response
+        HttpResponse res = h.send(req);
+        //System.debug('response:--> ' + res.getBody());
+        JSONParser parser =  JSON.createParser(res.getBody());
+        while (parser.nextToken() != null) {
+            if(parser.getText() == 'result') 
+            {
+                System.debug('Main Result'+ parser.getText());
+                system.debug('Main Parser-->' + parser.nextValue());
+                result = parser.getText();
+                resList.add(result);
+            }
+            if(parser.getText() == 'credits') 
+            {
+                System.debug('Main credits'+ parser.getText());
+                system.debug('Main credits-->' + parser.nextValue());
+                result1 = parser.getText();
+                resList.add(result1);
+            }
+            
+            //System.debug('Current token: ' + parser.getCurrentToken());
+            //    system.debug(parser.getText());
+        }
+        // system.debug('Parser-->' + parser.nextValue());
+        String fieldName = parser.getCurrentName();
+       
+        return resList;
+    }
+}
